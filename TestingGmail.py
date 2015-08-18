@@ -83,6 +83,10 @@ class GmailTests(unittest.TestCase):
         print (toast_msg.text)
     '''
 
+    def not_found_function(self):
+        logger.info('No matched mails')
+        raise Exception('Could not find matched mail')
+
     def check_mail_list(self, timestamp=None):
         driver = self.driver
 
@@ -91,7 +95,7 @@ class GmailTests(unittest.TestCase):
 
         search_txt = driver.find_element_by_id('com.google.android.gm:id/search_actionbar_query_text')
         # format keyword for verification
-        keyword = '123455XXX!@#$%^^^'
+        # keyword = '123455XXX!@#$%^^^'
 
         keyword = "subject:{title} to:{receipt} {tstamp:%Y-%m-%d %H:%M:%S} ".format(
             title=self.MAIL_TITLE, receipt=self.MAIL_RECEIPT, tstamp=timestamp
@@ -104,21 +108,13 @@ class GmailTests(unittest.TestCase):
         sleep(10)
         try:
             # successfully search mail with specified keyword
-            driver.find_element_by_id('com.google.android.gm:id/search_status_text_view')
+            srch_rst = driver.find_element_by_id('com.google.android.gm:id/search_status_text_view')
+            logger.debug(srch_rst.text)
 
         except NoSuchElementException:
 
-            logger.info('No matched mails')
-
+            self.assertRaises(self.not_found_function)
             return
-            # search picture of empty result
-            empty_text = driver.find_element_by_id('com.google.android.gm:id/empty_text').text
-
-            state1 = self.ERROR_NO_CONNECTION in empty_text
-            state2 = self.ERROR_NOT_FND in empty_text
-
-            logger.info("Error Hint: %s state1:%s state2:%s" % (empty_text, state1, state2))
-            self.assertTrue((state1 or state2), 'Verify Failed, Could not find error msg')
 
     # @unittest.skip('send')
     def test_send_mail(self):
@@ -130,9 +126,9 @@ class GmailTests(unittest.TestCase):
         write_btn.click()
 
         # fill receipt, title and body
-        receipt_text = driver.find_element_by_id('com.google.android.gm:id/to')
-        receipt_text.clear()
-        receipt_text.send_keys(self.MAIL_RECEIPT)
+        recipient_text = driver.find_element_by_id('com.google.android.gm:id/to')
+        recipient_text.clear()
+        recipient_text.send_keys(self.MAIL_RECEIPT)
         driver.press_keycode(self.KEY_CODE_ENTER)
 
         title_text = driver.find_element_by_id('com.google.android.gm:id/subject')
