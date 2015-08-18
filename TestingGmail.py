@@ -83,10 +83,6 @@ class GmailTests(unittest.TestCase):
         print (toast_msg.text)
     '''
 
-    def not_found_function(self):
-        logger.info('No matched mails')
-        raise Exception('Could not find matched mail')
-
     def check_mail_list(self, timestamp=None):
         driver = self.driver
 
@@ -105,16 +101,17 @@ class GmailTests(unittest.TestCase):
         driver.press_keycode(self.KEY_CODE_ENTER)
 
         # time for confirming result
-        sleep(10)
+        sleep(5)
         try:
+            logger.info('Find search status text')
             # successfully search mail with specified keyword
-            srch_rst = driver.find_element_by_id('com.google.android.gm:id/search_status_text_view')
-            logger.debug(srch_rst.text)
-
+            driver.find_element_by_id('com.google.android.gm:id/search_status_text_view')
         except NoSuchElementException:
+            logger.debug('No Such element Exception')
+            return False
 
-            self.assertRaises(self.not_found_function)
-            return
+        logger.info('Find sent mail')
+        return True
 
     # @unittest.skip('send')
     def test_send_mail(self):
@@ -153,11 +150,11 @@ class GmailTests(unittest.TestCase):
         driver.find_element_by_id('com.google.android.gm:id/send').click()
 
         # if some tips pop up, there is an error in receipt column
-        self.assertTrue(self.no_alert_present(), 'Please check your receipt')
+        self.assertTrue(self.no_alert_present(), 'Please check your recipient')
 
         # wait for sending
         sleep(3)
-        self.check_mail_list(timestamp)
+        self.assertTrue(self.check_mail_list(timestamp), 'Could not find matched mail' )
 
 
 if __name__ == '__main__':
